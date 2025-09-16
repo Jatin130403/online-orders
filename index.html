@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navbar -->
+  <nav class="bg-green-900 text-white px-6 py-4">
+    <h1 class="text-xl font-bold">Orders Dashboard</h1>
+  </nav>
+
+  <div class="max-w-6xl mx-auto mt-6 bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-lg font-semibold mb-4">All Orders</h2>
+    <table class="w-full border border-gray-200 text-left">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="p-3 border">Customer</th>
+          <th class="p-3 border">Date</th>
+          <th class="p-3 border">Time</th>
+          <th class="p-3 border">Dispatch</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1wbJonjyJQDrPJWbMCVBtRolJH4HDskU",
+      authDomain: "shreejee-ayucare.firebaseapp.com",
+      databaseURL: "https://shreejee-ayucare-default-rtdb.firebaseio.com",
+      projectId: "shreejee-ayucare",
+      storageBucket: "shreejee-ayucare.firebasestorage.app",
+      messagingSenderId: "247248655859",
+      appId: "1:247248655859:web:b09bfc30ff6953aad42e86",
+      measurementId: "G-3ZCF4H1QPP"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const table = document.getElementById("ordersTable");
+
+    // Load all orders
+    db.ref("orders").on("value", snapshot => {
+      table.innerHTML = "";
+      snapshot.forEach(child => {
+        const order = child.val();
+        const orderId = child.key;
+        const dateObj = new Date(order.timestamp);
+        const date = dateObj.toLocaleDateString();
+        const time = dateObj.toLocaleTimeString();
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="p-3 border text-blue-600 cursor-pointer hover:underline" onclick="viewOrder('${orderId}')">
+            ${order.firstName} ${order.lastName}
+          </td>
+          <td class="p-3 border">${date}</td>
+          <td class="p-3 border">${time}</td>
+          <td class="p-3 border text-center">
+            <div class="w-6 h-6 mx-auto rounded-full cursor-pointer ${order.dispatched ? 'bg-green-500' : 'bg-red-500'}"
+                 onclick="toggleDispatch('${orderId}', ${order.dispatched ? 'false' : 'true'})"></div>
+          </td>
+        `;
+        table.appendChild(row);
+      });
+    });
+
+    function toggleDispatch(orderId, newStatus) {
+      db.ref("orders/" + orderId).update({ dispatched: newStatus });
+    }
+
+    function viewOrder(orderId) {
+      window.location.href = `order-details.html?id=${orderId}`;
+    }
+  </script>
+</body>
+</html>

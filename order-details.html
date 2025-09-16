@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navbar -->
+  <nav class="bg-green-900 text-white px-6 py-4">
+    <h1 class="text-xl font-bold">Order Details</h1>
+  </nav>
+
+  <div class="max-w-3xl mx-auto mt-6 bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-lg font-semibold mb-4">Customer Order Information</h2>
+    <div id="orderInfo" class="space-y-2"></div>
+    <button onclick="history.back()" class="mt-6 px-4 py-2 bg-green-900 text-white rounded">⬅ Back</button>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1wbJonjyJQDrPJWbMCVBtRolJH4HDskU",
+      authDomain: "shreejee-ayucare.firebaseapp.com",
+      databaseURL: "https://shreejee-ayucare-default-rtdb.firebaseio.com",
+      projectId: "shreejee-ayucare",
+      storageBucket: "shreejee-ayucare.firebasestorage.app",
+      messagingSenderId: "247248655859",
+      appId: "1:247248655859:web:b09bfc30ff6953aad42e86",
+      measurementId: "G-3ZCF4H1QPP"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("id");
+    const orderInfo = document.getElementById("orderInfo");
+
+    db.ref("orders/" + orderId).once("value").then(snapshot => {
+      const order = snapshot.val();
+      if (!order) {
+        orderInfo.innerHTML = "<p class='text-red-500'>Order not found!</p>";
+        return;
+      }
+
+      orderInfo.innerHTML = `
+        <p><strong>Name:</strong> ${order.firstName} ${order.lastName}</p>
+        <p><strong>Phone:</strong> ${order.phone}</p>
+        <p><strong>Alternate Phone:</strong> ${order.altPhone || '-'}</p>
+        <p><strong>Address:</strong> ${order.address}, ${order.city}, ${order.state}, ${order.pincode}</p>
+        <p><strong>Quantity:</strong> ${order.quantity}</p>
+        <p><strong>Subtotal:</strong> ₹${order.subtotal}</p>
+        <p><strong>Discount:</strong> ₹${order.discount}</p>
+        <p><strong>Tax:</strong> ₹${order.tax}</p>
+        <p><strong>Total:</strong> ₹${order.total}</p>
+        <p><strong>Payment:</strong> ${order.payment}</p>
+        <p><strong>Status:</strong> ${order.dispatched ? '✅ Dispatched' : '❌ Pending'}</p>
+      `;
+    });
+  </script>
+</body>
+</html>
